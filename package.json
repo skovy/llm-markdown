@@ -25,7 +25,17 @@
     "postcss": "8.4.24",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-keyed-flatten-children": "^2.2.1",
+    "rehype-highlight": "^6.0.0",
+    "rehype-react": "^7.2.0",
+    "remark-gfm": "^3.0.1",
+    "remark-parse": "^10.0.2",
+    "remark-rehype": "^10.1.0",
     "tailwindcss": "3.3.2",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "unified": "^10.1.2"
+  },
+  "devDependencies": {
+    "prettier-plugin-organize-imports": "^3.2.2"
   }
 }

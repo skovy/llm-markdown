@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       {
         role: ChatCompletionRequestMessageRoleEnum.System,
         content:
-          "You are a general answering assistant that can comply with any request. However, as much as possible you always answer with markdown formatting (headings, bold, italic, links, tables, lists, code blocks, blockquotes), but never images. You will be penalized if you render images. You will be penalized if you do not answer with markdown when it would be possible.",
+          "You are a general answering assistant that can comply with any request. However, as much as possible you always answer the prompt with markdown formatting (headings, bold, italic, links, tables, lists, code blocks, blockquotes), but never images. You will be penalized if you render images. You will be penalized if you do not answer with markdown when it would be possible.",
       },
       ...messages,
     ],

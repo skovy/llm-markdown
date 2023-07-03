@@ -1,14 +1,18 @@
+import { useMarkdownProcessor } from "@/hooks/use-markdown-processor";
+
 interface Props {
   children: string;
 }
 
 export const AssistantMessage = ({ children }: Props) => {
+  const content = useMarkdownProcessor(children);
+
   return (
-    <li className="flex flex-col gap-1 ml-4">
+    <li className="flex flex-col flex-1 min-w-0 gap-1 ml-6">
       <p className="font-sans text-xs font-medium text-emerald-700">AI:</p>
-      <p className="p-3 border-2 border-emerald-200 rounded-lg bg-emerald-50 font-sans text-base text-emerald-900">
-        {children}
-      </p>
+      <div className="p-2 lg:p-6 border-2 border-emerald-200 rounded-lg bg-emerald-50 text-emerald-900 min-w-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+        {content}
+      </div>
     </li>
   );
 };

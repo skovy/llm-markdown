@@ -4,9 +4,11 @@ interface Props {
 
 export const UserMessage = ({ children }: Props) => {
   return (
-    <li className="flex flex-col gap-1 mr-4">
+    <li className="flex flex-col flex-1 min-w-0 gap-1 mr-6">
       <p className="font-sans text-xs font-medium text-indigo-700">You:</p>
-      <p className="p-3 border-2 border-indigo-200 rounded-lg bg-indigo-50 font-sans text-base text-indigo-900">{children}</p>
+      <p className="p-2 lg:p-6 border-2 border-indigo-200 rounded-lg bg-indigo-50 font-sans text-sm text-indigo-900 min-w-0">
+        {children}
+      </p>
     </li>
   );
 };
