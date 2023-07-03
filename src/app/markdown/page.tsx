@@ -67,5 +67,9 @@ This is a table:
 export default function Chat() {
   const content = useMarkdownProcessor(MESSAGE);
 
-  return <div className="mx-auto w-full p-8 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">{content}</div>;
+  return (
+    <div className="mx-auto w-full p-8 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+      {content}
+    </div>
+  );
 }
