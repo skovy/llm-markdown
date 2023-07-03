@@ -44,7 +44,7 @@ export const EmptyMessage = () => {
       <p className="font-sans text-base mb-6">
         All the source code is available on{" "}
         <Link
-          href="https://github.com/skovy/nextjs-llm-markdown"
+          href="https://github.com/skovy/llm-markdown"
           target="_blank"
           className={ANCHOR_CLASS_NAME}
         >

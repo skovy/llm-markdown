@@ -15,7 +15,7 @@ export const Nav = () => {
         <span className="font-mono font-semibold">LLM Markdown</span>
       </a>
       <Link
-        href="https://github.com/skovy/nextjs-llm-markdown"
+        href="https://github.com/skovy/llm-markdown"
         target="_blank"
         aria-label="Open GitHub repository"
         className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-colors"
