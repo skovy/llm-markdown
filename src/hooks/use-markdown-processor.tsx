@@ -11,13 +11,19 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeReact from "rehype-react";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
+// @ts-expect-error - missing types, removes extraneous paragraph tags from <li> elements
+import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+
+export const ANCHOR_CLASS_NAME =
+  "font-semibold underline text-emerald-700 underline-offset-[2px] decoration-1 hover:text-emerald-800 transition-colors";
 
 export const useMarkdownProcessor = (content: string) => {
   return useMemo(() => {
     return unified()
       .use(remarkParse)
+      .use(flattenListItemParagraphs)
       .use(remarkGfm)
       .use(remarkRehype)
       .use(rehypeHighlight)
@@ -30,7 +36,7 @@ export const useMarkdownProcessor = (content: string) => {
               href={href}
               target="_blank"
               rel="noreferrer"
-              className="font-semibold underline text-emerald-700 underline-offset-[3px] decoration-2 hover:text-emerald-800 transition-colors"
+              className={ANCHOR_CLASS_NAME}
             >
               {children}
             </a>
@@ -110,7 +116,7 @@ export const useMarkdownProcessor = (content: string) => {
             );
           },
           pre: ({ children }: JSX.IntrinsicElements["pre"]) => (
-            <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code">
+            <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
               {children}
             </pre>
           ),

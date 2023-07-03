@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyMessage } from "@/components/empty-message";
 import { MessageList } from "@/components/message-list";
 import { Nav } from "@/components/nav";
 import PaperPlaneRight from "@phosphor-icons/react/dist/icons/PaperPlaneRight";
@@ -12,7 +13,12 @@ export default function Chat() {
     <div className="flex flex-col-reverse h-screen overflow-y-scroll">
       <div className="mx-auto w-full px-2 lg:px-8 pb-8 flex flex-col stretch gap-8 flex-1">
         <Nav />
-        <MessageList messages={messages} />
+        {messages.length ? (
+          <MessageList messages={messages} />
+        ) : (
+          <EmptyMessage />
+        )}
+
         <form onSubmit={handleSubmit} className="max-w-2xl w-full mx-auto">
           <div className="relative">
             <input

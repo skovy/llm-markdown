@@ -1,5 +1,6 @@
 "use client";
 
+import { Nav } from "@/components/nav";
 import { useMarkdownProcessor } from "@/hooks/use-markdown-processor";
 
 export const MESSAGE = `
@@ -37,13 +38,13 @@ This is an unordered list:
 
 - one
 - two
-- three
+- three, and **formatting**
 
 This is an ordered list:
 
-1. stuff
+1. some
 1. more
-3. hi
+1. stuff
 
 ###### Heading level 6
 
@@ -68,8 +69,20 @@ export default function Chat() {
   const content = useMarkdownProcessor(MESSAGE);
 
   return (
-    <div className="mx-auto w-full p-8 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-      {content}
-    </div>
+    <>
+      <div className="max-w-2xl w-full mx-auto px-2 lg:px-8 pb-8">
+        <Nav />
+        <h1 className="font-sans text-2xl font-semibold text-emerald-950 mb-4 mt-8">
+          Supported Markdown
+        </h1>
+        <p className="font-sans text-base text-emerald-950">
+          Below is the markdown that is supported in the LLM responses.
+        </p>
+        <hr className="border-t-2 border-emerald-100 my-8" />
+        <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          {content}
+        </div>
+      </div>
+    </>
   );
 }
