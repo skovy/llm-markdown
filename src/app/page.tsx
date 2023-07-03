@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageList } from "@/components/message-list";
+import { Nav } from "@/components/nav";
 import PaperPlaneRight from "@phosphor-icons/react/dist/icons/PaperPlaneRight";
 import { useChat } from "ai/react";
 
@@ -9,7 +10,8 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col-reverse h-screen overflow-y-scroll">
-      <div className="mx-auto w-full p-8 flex flex-col stretch gap-8">
+      <div className="mx-auto w-full px-2 lg:px-8 pb-8 flex flex-col stretch gap-8 flex-1">
+        <Nav />
         <MessageList messages={messages} />
         <form onSubmit={handleSubmit} className="max-w-2xl w-full mx-auto">
           <div className="relative">

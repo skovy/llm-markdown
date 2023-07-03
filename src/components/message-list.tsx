@@ -7,7 +7,7 @@ interface Props {
 
 export const MessageList = ({ messages }: Props) => {
   return (
-    <ul className="grid gap-4 max-w-2xl flex-1 mx-auto">
+    <ul className="grid auto-rows-min	gap-4 max-w-2xl flex-1 mx-auto w-full">
       {messages.map((m) => (
         <Message key={m.id} message={m} />
       ))}
