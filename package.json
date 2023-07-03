@@ -11,6 +11,7 @@
   "dependencies": {
     "@capsizecss/metrics": "^1.2.0",
     "@phosphor-icons/react": "^2.0.10",
+    "@radix-ui/react-dialog": "^1.0.4",
     "@themosaad/tailwindcss-capsize": "^1.0.0",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",

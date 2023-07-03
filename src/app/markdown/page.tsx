@@ -69,8 +69,8 @@ export default function Chat() {
   const content = useMarkdownProcessor(MESSAGE);
 
   return (
-    <>
-      <div className="max-w-2xl w-full mx-auto px-2 lg:px-8 pb-8">
+    <div className="px-2 lg:px-8 pb-8">
+      <div className="max-w-2xl w-full mx-auto">
         <Nav />
         <h1 className="font-sans text-2xl font-semibold text-emerald-950 mb-4 mt-8">
           Supported Markdown
@@ -83,6 +83,6 @@ export default function Chat() {
           {content}
         </div>
       </div>
-    </>
+    </div>
   );
 }

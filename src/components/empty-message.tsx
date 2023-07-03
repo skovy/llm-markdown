@@ -54,12 +54,7 @@ export const EmptyMessage = () => {
       </p>
       <p className="font-sans text-base">
         Since this is a demo app, you will need to provide your own OpenAI API
-        Key. This will be saved in your browser&apos;s local storage under the
-        name{" "}
-        <code className="font-mono text-emerald-900 font-semibold">
-          ai-token
-        </code>
-        .
+        Key.
       </p>
     </div>
   );
