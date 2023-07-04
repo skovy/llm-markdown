@@ -2,6 +2,8 @@
 
 A sample app demonstrating how to display rich-text responses from Large Language Models (LLMs) by prompting for and rendering Markdown.
 
+![LLM Markdown Demo](other/demo.gif)
+
 ## Built with
 
 - [Nextjs](https://nextjs.org)
