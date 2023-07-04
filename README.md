@@ -7,6 +7,7 @@ A sample app demonstrating how to display rich-text responses from Large Languag
 - [Nextjs](https://nextjs.org)
 - [Vercel AI](https://sdk.vercel.ai/docs)
 - [`remark`](https://remark.js.org)
+- [`mermaid`](https://mermaid.js.org/)
 - And more...
 
 ## Setup
