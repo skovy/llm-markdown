@@ -1,18 +1,27 @@
+import { Dialog } from "@/components/dialog";
+import { CircleNotch } from "@phosphor-icons/react";
+import CheckFat from "@phosphor-icons/react/dist/icons/CheckFat";
+import Copy from "@phosphor-icons/react/dist/icons/Copy";
+import FlowArrow from "@phosphor-icons/react/dist/icons/FlowArrow";
 import "highlight.js/styles/base16/green-screen.css";
+// @ts-expect-error
+import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
+import mermaid from "mermaid";
+import Link from "next/link";
 import {
   Children,
   createElement,
   Fragment,
   isValidElement,
+  useEffect,
   useMemo,
+  useState,
 } from "react";
 import flattenChildren from "react-keyed-flatten-children";
 import rehypeHighlight from "rehype-highlight";
 import rehypeReact from "rehype-react";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
-// @ts-expect-error - missing types, removes extraneous paragraph tags from <li> elements
-import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
@@ -20,13 +29,17 @@ export const ANCHOR_CLASS_NAME =
   "font-semibold underline text-emerald-700 underline-offset-[2px] decoration-1 hover:text-emerald-800 transition-colors";
 
 export const useMarkdownProcessor = (content: string) => {
+  useEffect(() => {
+    mermaid.initialize({ startOnLoad: false, theme: "forest" });
+  }, []);
+
   return useMemo(() => {
     return unified()
       .use(remarkParse)
       .use(flattenListItemParagraphs)
       .use(remarkGfm)
       .use(remarkRehype)
-      .use(rehypeHighlight)
+      .use(rehypeHighlight, { ignoreMissing: true })
       .use(rehypeReact, {
         createElement,
         Fragment,
@@ -104,22 +117,16 @@ export const useMarkdownProcessor = (content: string) => {
           em: ({ children }: JSX.IntrinsicElements["em"]) => (
             <em>{children}</em>
           ),
-          code: ({ children, className }: JSX.IntrinsicElements["code"]) => {
-            // Highlight.js adds a `className` so this is a hack to detect if the code block
-            // is a language block wrapped in a `pre` tag.
-            if (className) return <code className={className}>{children}</code>;
-
+          code: CodeBlock,
+          pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
             return (
-              <code className="inline-block font-code bg-emerald-100 text-emerald-950 p-0.5 -my-0.5 rounded">
-                {children}
-              </code>
+              <div className="relative mb-6">
+                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
+                  {children}
+                </pre>
+              </div>
             );
           },
-          pre: ({ children }: JSX.IntrinsicElements["pre"]) => (
-            <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
-              {children}
-            </pre>
-          ),
           ul: ({ children }: JSX.IntrinsicElements["ul"]) => (
             <ul className="flex flex-col gap-3 text-emerald-900 my-6">
               {Children.map(
@@ -187,6 +194,122 @@ export const useMarkdownProcessor = (content: string) => {
   }, [content]);
 };
 
+const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
+  const [copied, setCopied] = useState(false);
+  const [showMermaidPreview, setShowMermaidPreview] = useState(false);
+
+  useEffect(() => {
+    if (copied) {
+      const interval = setTimeout(() => setCopied(false), 1000);
+      return () => clearTimeout(interval);
+    }
+  }, [copied]);
+
+  // Highlight.js adds a `className` so this is a hack to detect if the code block
+  // is a language block wrapped in a `pre` tag.
+  if (className) {
+    const isMermaid = className.includes("language-mermaid");
+
+    return (
+      <>
+        <code className={className}>{children}</code>
+        <div className="absolute top-1 right-1 flex flex-col gap-1">
+          <button
+            type="button"
+            className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+            aria-label="copy code to clipboard"
+            title="Copy code to clipboard"
+            onClick={() => {
+              navigator.clipboard.writeText(children?.toString() ?? "");
+              setCopied(true);
+            }}
+          >
+            {copied ? (
+              <CheckFat className="w-4 h-4" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+          {isMermaid ? (
+            <>
+              <button
+                type="button"
+                className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+                aria-label="Open Mermaid preview"
+                title="Open Mermaid preview"
+                onClick={() => {
+                  setShowMermaidPreview(true);
+                }}
+              >
+                <FlowArrow className="w-4 h-4" />
+              </button>
+              <Dialog
+                open={showMermaidPreview}
+                setOpen={setShowMermaidPreview}
+                title="Mermaid diagram preview"
+                size="3xl"
+              >
+                <Mermaid content={children?.toString() ?? ""} />
+              </Dialog>
+            </>
+          ) : null}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <code className="inline-block font-code bg-emerald-100 text-emerald-950 p-0.5 -my-0.5 rounded">
+      {children}
+    </code>
+  );
+};
+
+const Mermaid = ({ content }: { content: string }) => {
+  const [diagram, setDiagram] = useState<string | boolean>(true);
+
+  useEffect(() => {
+    const render = async () => {
+      // Generate a random ID for mermaid to use.
+      const id = `mermaid-svg-${Math.round(Math.random() * 10000000)}`;
+
+      // Confirm the diagram is valid before rendering.
+      if (await mermaid.parse(content, { suppressErrors: true })) {
+        const { svg } = await mermaid.render(id, content);
+        setDiagram(svg);
+      } else {
+        setDiagram(false);
+      }
+    };
+    render();
+  }, [content]);
+
+  if (diagram === true) {
+    return (
+      <div className="flex gap-2 items-center">
+        <CircleNotch className="animate-spin w-4 h-4 text-emerald-900" />
+        <p className="font-sans text-sm text-slate-700">Rendering diagram...</p>
+      </div>
+    );
+  } else if (diagram === false) {
+    return (
+      <p className="font-sans text-sm text-slate-700">
+        Unable to render this diagram. Try copying it into the{" "}
+        <Link
+          href="https://mermaid.live/edit"
+          className={ANCHOR_CLASS_NAME}
+          target="_blank"
+        >
+          Mermaid Live Editor
+        </Link>
+        .
+      </p>
+    );
+  } else {
+    return <div dangerouslySetInnerHTML={{ __html: diagram ?? "" }} />;
+  }
+};
+
 export const MARKDOWN_TEST_MESSAGE = `
 # Heading level 1
 
@@ -247,4 +370,21 @@ This is a table:
 | Zucchini | A summer squash with a mild flavor and tender texture. It can be sautéed, grilled, roasted, or used in baking recipes. |
 | Cauliflower | A versatile vegetable that can be roasted, steamed, mashed, or used to make gluten-free alternatives like cauliflower rice or pizza crust. |
 | Green Beans | Long, slender pods that are low in calories and rich in vitamins. They can be steamed, stir-fried, or used in casseroles and salads. |
-| Potato | A starchy vegetable available in various varieties. It can be boiled, baked, mashed, or used in soups, fries, and many other dishes. |`;
+| Potato | A starchy vegetable available in various varieties. It can be boiled, baked, mashed, or used in soups, fries, and many other dishes. |
+
+This is a mermaid diagram:
+
+\`\`\`mermaid
+gitGraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit
+    commit
+\`\`\`
+`;
