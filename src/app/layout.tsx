@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import classNames from "classnames";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -32,6 +33,7 @@ export default function RootLayout({
         )}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
