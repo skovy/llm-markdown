@@ -1,4 +1,13 @@
+import { Dialog } from "@/components/dialog";
+import { CircleNotch } from "@phosphor-icons/react";
+import CheckFat from "@phosphor-icons/react/dist/icons/CheckFat";
+import Copy from "@phosphor-icons/react/dist/icons/Copy";
+import FlowArrow from "@phosphor-icons/react/dist/icons/FlowArrow";
 import "highlight.js/styles/base16/green-screen.css";
+// @ts-expect-error
+import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
+import mermaid from "mermaid";
+import Link from "next/link";
 import {
   Children,
   createElement,
@@ -13,9 +22,6 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeReact from "rehype-react";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
-// @ts-expect-error - missing types, removes extraneous paragraph tags from <li> elements
-import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
-import mermaid from "mermaid";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
@@ -111,29 +117,14 @@ export const useMarkdownProcessor = (content: string) => {
           em: ({ children }: JSX.IntrinsicElements["em"]) => (
             <em>{children}</em>
           ),
-          code: ({ children, className }: JSX.IntrinsicElements["code"]) => {
-            // Highlight.js adds a `className` so this is a hack to detect if the code block
-            // is a language block wrapped in a `pre` tag.
-            if (className) return <code className={className}>{children}</code>;
-
-            return (
-              <code className="inline-block font-code bg-emerald-100 text-emerald-950 p-0.5 -my-0.5 rounded">
-                {children}
-              </code>
-            );
-          },
+          code: CodeBlock,
           pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
-            const codeClassName = children[0].props.className;
-            const isMermaid = codeClassName?.includes("language-mermaid");
-
-            if (isMermaid) {
-              return <Mermaid>{children[0].props.children[0]}</Mermaid>;
-            }
-
             return (
-              <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
-                {children}
-              </pre>
+              <div className="relative">
+                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
+                  {children}
+                </pre>
+              </div>
             );
           },
           ul: ({ children }: JSX.IntrinsicElements["ul"]) => (
@@ -203,23 +194,119 @@ export const useMarkdownProcessor = (content: string) => {
   }, [content]);
 };
 
-const Mermaid = ({ children }: { children: string }) => {
-  const [diagram, setDiagram] = useState<string | null>(null);
-  console.log(diagram)
+const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
+  const [copied, setCopied] = useState(false);
+  const [showMermaidPreview, setShowMermaidPreview] = useState(false);
+
+  useEffect(() => {
+    if (copied) {
+      const interval = setTimeout(() => setCopied(false), 1000);
+      return () => clearTimeout(interval);
+    }
+  }, [copied]);
+
+  // Highlight.js adds a `className` so this is a hack to detect if the code block
+  // is a language block wrapped in a `pre` tag.
+  if (className) {
+    const isMermaid = className.includes("language-mermaid");
+
+    return (
+      <>
+        <code className={className}>{children}</code>
+        <div className="absolute top-1 right-1 flex flex-col gap-1">
+          <button
+            type="button"
+            className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+            aria-label="copy code to clipboard"
+            title="Copy code to clipboard"
+            onClick={() => {
+              navigator.clipboard.writeText(children?.toString() ?? "");
+              setCopied(true);
+            }}
+          >
+            {copied ? (
+              <CheckFat className="w-4 h-4" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+          {isMermaid ? (
+            <>
+              <button
+                type="button"
+                className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+                aria-label="Open Mermaid preview"
+                title="Open Mermaid preview"
+                onClick={() => {
+                  setShowMermaidPreview(true);
+                }}
+              >
+                <FlowArrow className="w-4 h-4" />
+              </button>
+              <Dialog
+                open={showMermaidPreview}
+                setOpen={setShowMermaidPreview}
+                title="Mermaid diagram preview"
+              >
+                <Mermaid content={children?.toString() ?? ""} />
+              </Dialog>
+            </>
+          ) : null}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <code className="inline-block font-code bg-emerald-100 text-emerald-950 p-0.5 -my-0.5 rounded">
+      {children}
+    </code>
+  );
+};
+
+const Mermaid = ({ content }: { content: string }) => {
+  const [diagram, setDiagram] = useState<string | boolean>(true);
+
   useEffect(() => {
     const render = async () => {
+      // Generate a random ID for mermaid to use.
       const id = `mermaid-svg-${Math.round(Math.random() * 10000000)}`;
-      if (await mermaid.parse(children, { suppressErrors: true })) {
-        const { svg } = await mermaid.render(id, children);
+
+      // Confirm the diagram is valid before rendering.
+      if (await mermaid.parse(content, { suppressErrors: true })) {
+        const { svg } = await mermaid.render(id, content);
         setDiagram(svg);
       } else {
-        setDiagram("Unable to render mermaid SVG.");
+        setDiagram(false);
       }
     };
     render();
-  }, [children]);
+  }, [content]);
 
-  return <div dangerouslySetInnerHTML={{ __html: diagram ?? "" }} />;
+  if (diagram === true) {
+    return (
+      <div className="flex gap-2 items-center">
+        <CircleNotch className="animate-spin w-4 h-4 text-emerald-900" />
+        <p className="font-sans text-sm text-slate-700">Rendering diagram...</p>
+      </div>
+    );
+  } else if (diagram === false) {
+    return (
+      <p className="font-sans text-sm text-slate-700">
+        Unable to render this diagram. Try copying it into the{" "}
+        <Link
+          href="https://mermaid.live/edit"
+          className={ANCHOR_CLASS_NAME}
+          target="_blank"
+        >
+          Mermaid Live Editor
+        </Link>
+        .
+      </p>
+    );
+  } else {
+    return <div dangerouslySetInnerHTML={{ __html: diagram ?? "" }} />;
+  }
 };
 
 export const MARKDOWN_TEST_MESSAGE = `
@@ -287,24 +374,19 @@ This is a table:
 This is a mermaid diagram:
 
 \`\`\`mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-
-    Client->>Server: GET /webpage
-    Server-->>Client: Respond with HTML
-    Client->>Server: GET /styles.css
-    Server-->>Client: Respond with CSS
-    Client->>Server: GET /script.js
-    Server-->>Client: Respond with JavaScript
-    Client->>Server: GET /image.png
-    Server-->>Client: Respond with image
-
-    Note over Client: Render HTML
-    Client->>Client: Retrieve CSS
-    Note over Client: Apply styles
-    Client->>Client: Retrieve JavaScript
-    Note over Client: Execute scripts
-    Client-
+quadrantChart
+    title Reach and engagement of campaigns
+    x-axis Low Reach --> High Reach
+    y-axis Low Engagement --> High Engagement
+    quadrant-1 We should expand
+    quadrant-2 Need to promote
+    quadrant-3 Re-evaluate
+    quadrant-4 May be improved
+    Campaign A: [0.3, 0.6]
+    Campaign B: [0.45, 0.23]
+    Campaign C: [0.57, 0.69]
+    Campaign D: [0.78, 0.34]
+    Campaign E: [0.40, 0.34]
+    Campaign F: [0.35, 0.78]
 \`\`\`
 `;
