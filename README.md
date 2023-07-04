@@ -2,7 +2,7 @@
 
 A sample app demonstrating how to display rich-text responses from Large Language Models (LLMs) by prompting for and rendering Markdown.
 
-![LLM Markdown Demo](other/demo.gif)
+![LLM Markdown Demo](other/demo-movies.gif)
 
 ## Built with
 
@@ -19,3 +19,5 @@ A sample app demonstrating how to display rich-text responses from Large Languag
 - `npm run dev`
 - Open in your browser
 - Set your OpenAI API Key
+
+![LLM Markdown Demo](other/demo-vegetables.gif)
