@@ -23,6 +23,12 @@ export const EmptyMessage = () => {
           className={ANCHOR_CLASS_NAME}
         >
           Markdown
+        </Link>{" "}and <Link
+          href="https://mermaid.js.org"
+          target="_blank"
+          className={ANCHOR_CLASS_NAME}
+        >
+          Mermaid
         </Link>{" "}
         with{" "}
         <Link
