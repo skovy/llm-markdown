@@ -13,7 +13,7 @@ const monospace = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Markdown LLM",
+  title: "LLM Markdown",
   description:
     "App demo for rendering rich-text (markdown) from a Large Language Model.",
 };
