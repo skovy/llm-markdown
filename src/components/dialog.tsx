@@ -8,6 +8,7 @@ interface Props {
   title: string;
   description?: ReactNode;
   children: ReactNode;
+  size?: "xl" | "3xl";
 }
 
 export const Dialog = ({
@@ -16,12 +17,13 @@ export const Dialog = ({
   title,
   description,
   children,
+  size = "xl"
 }: Props) => {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 py-8 bg-slate-900/90 grid place-items-center overflow-y-auto">
-          <DialogPrimitive.Content className="bg-white rounded-lg shadow-2xl p-8 w-[90vw] max-w-xl relative">
+        <DialogPrimitive.Overlay className="fixed inset-0 py-8 bg-slate-900/90 grid place-items-center overflow-y-auto z-50">
+          <DialogPrimitive.Content className={`bg-white rounded-lg shadow-2xl p-8 w-[90vw] relative max-w-${size}`}>
             <DialogPrimitive.Title className="font-sans text-lg font-semibold mb-4">
               {title}
             </DialogPrimitive.Title>

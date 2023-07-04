@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const Nav = () => {
   return (
-    <nav className="max-w-2xl w-full mx-auto py-2 lg:py-4 flex gap-2 items-center justify-between sticky top-0 bg-white">
+    <nav className="max-w-2xl w-full mx-auto py-2 lg:py-4 flex gap-2 items-center justify-between sticky top-0 bg-white z-10">
       <a
         href="/"
         className="flex gap-2 items-center text-emerald-900 hover:text-emerald-950 group transition-colors"

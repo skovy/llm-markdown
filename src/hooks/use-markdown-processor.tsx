@@ -120,8 +120,8 @@ export const useMarkdownProcessor = (content: string) => {
           code: CodeBlock,
           pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
             return (
-              <div className="relative">
-                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
+              <div className="relative mb-6">
+                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
                   {children}
                 </pre>
               </div>
@@ -247,6 +247,7 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
                 open={showMermaidPreview}
                 setOpen={setShowMermaidPreview}
                 title="Mermaid diagram preview"
+                size="3xl"
               >
                 <Mermaid content={children?.toString() ?? ""} />
               </Dialog>
@@ -374,19 +375,16 @@ This is a table:
 This is a mermaid diagram:
 
 \`\`\`mermaid
-quadrantChart
-    title Reach and engagement of campaigns
-    x-axis Low Reach --> High Reach
-    y-axis Low Engagement --> High Engagement
-    quadrant-1 We should expand
-    quadrant-2 Need to promote
-    quadrant-3 Re-evaluate
-    quadrant-4 May be improved
-    Campaign A: [0.3, 0.6]
-    Campaign B: [0.45, 0.23]
-    Campaign C: [0.57, 0.69]
-    Campaign D: [0.78, 0.34]
-    Campaign E: [0.40, 0.34]
-    Campaign F: [0.35, 0.78]
+gitGraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit
+    commit
 \`\`\`
 `;

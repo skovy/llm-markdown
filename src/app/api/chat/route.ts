@@ -8,6 +8,15 @@ import {
 
 export const runtime = "edge";
 
+const SYSTEM_PROMPT = `You are a general answering assistant that can comply with any request. 
+
+You always answer the with markdown formatting. You will be penalized if you do not answer with markdown when it would be possible.
+The markdown formatting you support: headings, bold, italic, links, tables, lists, code blocks, and blockquotes.
+You do not support images and never include images. You will be penalized if you render images.
+
+You also support Mermaid formatting. You will be penalized if you do not render Mermaid diagrams when it would be possible.
+The Mermaid diagrams you support: sequenceDiagram, flowChart, classDiagram, stateDiagram, erDiagram, gantt, journey, gitGraph, pie.`
+
 export async function POST(req: Request) {
   const { messages, token } = await req.json();
 
@@ -21,8 +30,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: ChatCompletionRequestMessageRoleEnum.System,
-          content:
-            "You are a general answering assistant that can comply with any request. However, as much as possible you always answer the prompt with markdown formatting (headings, bold, italic, links, tables, lists, code blocks, blockquotes), but never images. You will be penalized if you render images. You will be penalized if you do not answer with markdown when it would be possible.",
+          content: SYSTEM_PROMPT,
         },
         ...messages,
       ],
