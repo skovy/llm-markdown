@@ -22,7 +22,6 @@
     "classnames": "^2.3.2",
     "eslint": "8.44.0",
     "eslint-config-next": "13.4.7",
-    "mdast-flatten-listitem-paragraphs": "^1.0.0",
     "mermaid": "^10.2.4",
     "next": "13.4.7",
     "openai-edge": "^1.1.1",

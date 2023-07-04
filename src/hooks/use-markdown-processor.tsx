@@ -3,9 +3,8 @@ import { CircleNotch } from "@phosphor-icons/react";
 import CheckFat from "@phosphor-icons/react/dist/icons/CheckFat";
 import Copy from "@phosphor-icons/react/dist/icons/Copy";
 import FlowArrow from "@phosphor-icons/react/dist/icons/FlowArrow";
+import { Root } from "hast";
 import "highlight.js/styles/base16/green-screen.css";
-// @ts-expect-error
-import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
 import mermaid from "mermaid";
 import Link from "next/link";
 import {
@@ -23,10 +22,30 @@ import rehypeReact from "rehype-react";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { unified } from "unified";
+import { Plugin, unified } from "unified";
+import { visit } from "unist-util-visit";
 
 export const ANCHOR_CLASS_NAME =
   "font-semibold underline text-emerald-700 underline-offset-[2px] decoration-1 hover:text-emerald-800 transition-colors";
+
+// Mixing arbitrary Markdown + Capsize leads to lots of challenges
+// with paragraphs and list items. This replaces paragraphs inside
+// list items into divs to avoid nesting Capsize.
+const rehypeListItemParagraphToDiv: Plugin<[], Root> = () => {
+  return (tree) => {
+    visit(tree, "element", (element) => {
+      if (element.tagName === "li") {
+        element.children = element.children.map((child) => {
+          if (child.type === "element" && child.tagName === "p") {
+            child.tagName = "div";
+          }
+          return child;
+        });
+      }
+    });
+    return tree;
+  };
+};
 
 export const useMarkdownProcessor = (content: string) => {
   useEffect(() => {
@@ -36,10 +55,10 @@ export const useMarkdownProcessor = (content: string) => {
   return useMemo(() => {
     return unified()
       .use(remarkParse)
-      .use(flattenListItemParagraphs)
       .use(remarkGfm)
       .use(remarkRehype)
       .use(rehypeHighlight, { ignoreMissing: true })
+      .use(rehypeListItemParagraphToDiv)
       .use(rehypeReact, {
         createElement,
         Fragment,
@@ -104,7 +123,7 @@ export const useMarkdownProcessor = (content: string) => {
           ),
           p: (props: JSX.IntrinsicElements["p"]) => {
             return (
-              <p className="font-sans text-sm text-emerald-900 leading-relaxed mb-6">
+              <p className="font-sans text-sm text-emerald-900 mb-6">
                 {props.children}
               </p>
             );
@@ -128,12 +147,12 @@ export const useMarkdownProcessor = (content: string) => {
             );
           },
           ul: ({ children }: JSX.IntrinsicElements["ul"]) => (
-            <ul className="flex flex-col gap-3 text-emerald-900 my-6">
+            <ul className="flex flex-col gap-3 text-emerald-900 my-6 pl-3 [&_ol]:my-3 [&_ul]:my-3">
               {Children.map(
                 flattenChildren(children).filter(isValidElement),
                 (child, index) => (
                   <li key={index} className="flex gap-2 items-start">
-                    <span className="w-1 h-1 rounded-full bg-current block shrink-0 mt-1" />
+                    <div className="w-1 h-1 rounded-full bg-current block shrink-0 mt-1" />
                     {child}
                   </li>
                 )
@@ -141,17 +160,17 @@ export const useMarkdownProcessor = (content: string) => {
             </ul>
           ),
           ol: ({ children }: JSX.IntrinsicElements["ol"]) => (
-            <ol className="flex flex-col gap-3 text-emerald-900 my-6">
+            <ol className="flex flex-col gap-3 text-emerald-900 my-6 pl-3 [&_ol]:my-3 [&_ul]:my-3">
               {Children.map(
                 flattenChildren(children).filter(isValidElement),
                 (child, index) => (
                   <li key={index} className="flex gap-2 items-start">
-                    <span
+                    <div
                       className="font-sans text-sm text-emerald-900 font-semibold shrink-0 min-w-[1.4ch]"
                       aria-hidden
                     >
                       {index + 1}.
-                    </span>
+                    </div>
                     {child}
                   </li>
                 )
@@ -159,9 +178,7 @@ export const useMarkdownProcessor = (content: string) => {
             </ol>
           ),
           li: ({ children }: JSX.IntrinsicElements["li"]) => (
-            <span className="font-sans text-sm leading-relaxed">
-              {children}
-            </span>
+            <div className="font-sans text-sm">{children}</div>
           ),
           table: ({ children }: JSX.IntrinsicElements["table"]) => (
             <div className="overflow-x-auto mb-6">
@@ -352,6 +369,23 @@ This is an ordered list:
 1. some
 1. more
 1. stuff
+
+This is a complex list:
+
+1. **One**: 1
+    - One
+    - Two
+    - Three
+  
+2. **Two**: 2
+    - One
+    - Two
+    - Three
+  
+3. **Three**:
+    - One
+    - Two
+    - Three
 
 ###### Heading level 6
 
