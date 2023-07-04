@@ -4,7 +4,9 @@ import {
   createElement,
   Fragment,
   isValidElement,
+  useEffect,
   useMemo,
+  useState,
 } from "react";
 import flattenChildren from "react-keyed-flatten-children";
 import rehypeHighlight from "rehype-highlight";
@@ -13,6 +15,7 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 // @ts-expect-error - missing types, removes extraneous paragraph tags from <li> elements
 import flattenListItemParagraphs from "mdast-flatten-listitem-paragraphs";
+import mermaid from "mermaid";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
@@ -20,13 +23,17 @@ export const ANCHOR_CLASS_NAME =
   "font-semibold underline text-emerald-700 underline-offset-[2px] decoration-1 hover:text-emerald-800 transition-colors";
 
 export const useMarkdownProcessor = (content: string) => {
+  useEffect(() => {
+    mermaid.initialize({ startOnLoad: false, theme: "forest" });
+  }, []);
+
   return useMemo(() => {
     return unified()
       .use(remarkParse)
       .use(flattenListItemParagraphs)
       .use(remarkGfm)
       .use(remarkRehype)
-      .use(rehypeHighlight)
+      .use(rehypeHighlight, { ignoreMissing: true })
       .use(rehypeReact, {
         createElement,
         Fragment,
@@ -115,11 +122,20 @@ export const useMarkdownProcessor = (content: string) => {
               </code>
             );
           },
-          pre: ({ children }: JSX.IntrinsicElements["pre"]) => (
-            <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
-              {children}
-            </pre>
-          ),
+          pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
+            const codeClassName = children[0].props.className;
+            const isMermaid = codeClassName?.includes("language-mermaid");
+
+            if (isMermaid) {
+              return <Mermaid>{children[0].props.children[0]}</Mermaid>;
+            }
+
+            return (
+              <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 mb-6 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
+                {children}
+              </pre>
+            );
+          },
           ul: ({ children }: JSX.IntrinsicElements["ul"]) => (
             <ul className="flex flex-col gap-3 text-emerald-900 my-6">
               {Children.map(
@@ -187,6 +203,25 @@ export const useMarkdownProcessor = (content: string) => {
   }, [content]);
 };
 
+const Mermaid = ({ children }: { children: string }) => {
+  const [diagram, setDiagram] = useState<string | null>(null);
+  console.log(diagram)
+  useEffect(() => {
+    const render = async () => {
+      const id = `mermaid-svg-${Math.round(Math.random() * 10000000)}`;
+      if (await mermaid.parse(children, { suppressErrors: true })) {
+        const { svg } = await mermaid.render(id, children);
+        setDiagram(svg);
+      } else {
+        setDiagram("Unable to render mermaid SVG.");
+      }
+    };
+    render();
+  }, [children]);
+
+  return <div dangerouslySetInnerHTML={{ __html: diagram ?? "" }} />;
+};
+
 export const MARKDOWN_TEST_MESSAGE = `
 # Heading level 1
 
@@ -247,4 +282,29 @@ This is a table:
 | Zucchini | A summer squash with a mild flavor and tender texture. It can be sautéed, grilled, roasted, or used in baking recipes. |
 | Cauliflower | A versatile vegetable that can be roasted, steamed, mashed, or used to make gluten-free alternatives like cauliflower rice or pizza crust. |
 | Green Beans | Long, slender pods that are low in calories and rich in vitamins. They can be steamed, stir-fried, or used in casseroles and salads. |
-| Potato | A starchy vegetable available in various varieties. It can be boiled, baked, mashed, or used in soups, fries, and many other dishes. |`;
+| Potato | A starchy vegetable available in various varieties. It can be boiled, baked, mashed, or used in soups, fries, and many other dishes. |
+
+This is a mermaid diagram:
+
+\`\`\`mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Server: GET /webpage
+    Server-->>Client: Respond with HTML
+    Client->>Server: GET /styles.css
+    Server-->>Client: Respond with CSS
+    Client->>Server: GET /script.js
+    Server-->>Client: Respond with JavaScript
+    Client->>Server: GET /image.png
+    Server-->>Client: Respond with image
+
+    Note over Client: Render HTML
+    Client->>Client: Retrieve CSS
+    Note over Client: Apply styles
+    Client->>Client: Retrieve JavaScript
+    Note over Client: Execute scripts
+    Client-
+\`\`\`
+`;
