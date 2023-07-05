@@ -8,22 +8,43 @@ export const EmptyMessage = () => {
         Welcome to LLM Markdown!
       </p>
       <p className="font-sans text-base mb-6">
-        This app is demonstrating rending rich-text responses from{" "}
+        This app is a demo for supporting rich-text responses from a{" "}
         <Link
           href="https://en.wikipedia.org/wiki/Large_language_model"
           target="_blank"
           className={ANCHOR_CLASS_NAME}
         >
-          Large Language Models
+          Large Language Model
         </Link>{" "}
-        (LLMs) using{" "}
+        (LLM). Once you provide your OpenAI API Key, you can start prompting and
+        receiving rich-text responses.
+      </p>
+      <p className="font-sans text-base mb-6">
+        Try something like:{" "}
+        <em className="italic font-semibold">
+          &quot;Top 10 grossing movies of all time as a pie chart&quot;
+        </em>
+      </p>
+
+      <p className="font-sans text-base font-semibold mt-10 mb-6">
+        How it works
+      </p>
+
+      <p className="font-sans text-base mb-6">
+        A system prompt is used to encourage the LLM to generate a response with
+        Markdown and Mermaid formatting.
+      </p>
+      <p className="font-sans text-base mb-6">
+        The response is rendered using{" "}
         <Link
-          href="https://en.wikipedia.org/wiki/Markdown"
+          href="https://unifiedjs.com"
           target="_blank"
           className={ANCHOR_CLASS_NAME}
         >
-          Markdown
-        </Link>{" "}and <Link
+          unified
+        </Link>{" "}
+        and{" "}
+        <Link
           href="https://mermaid.js.org"
           target="_blank"
           className={ANCHOR_CLASS_NAME}
@@ -57,10 +78,6 @@ export const EmptyMessage = () => {
           GitHub
         </Link>
         .
-      </p>
-      <p className="font-sans text-base">
-        Since this is a demo app, you will need to provide your own OpenAI API
-        Key.
       </p>
     </div>
   );
