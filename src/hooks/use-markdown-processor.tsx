@@ -140,7 +140,7 @@ export const useMarkdownProcessor = (content: string) => {
           pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
             return (
               <div className="relative mb-6">
-                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm">
+                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm overflow-x-auto">
                   {children}
                 </pre>
               </div>
