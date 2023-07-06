@@ -2,6 +2,11 @@
 
 import { EmptyMessage } from "@/components/empty-message";
 import { MessageList } from "@/components/message-list";
+import {
+  ModelDialog,
+  SUPPORTED_MODELS,
+  SupportedModels,
+} from "@/components/model-dialog";
 import { Nav } from "@/components/nav";
 import { TokenDialog } from "@/components/token-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -10,11 +15,25 @@ import PaperPlaneRight from "@phosphor-icons/react/dist/icons/PaperPlaneRight";
 import { useChat } from "ai/react";
 import { useState } from "react";
 
+const parseError = (error: Error) => {
+  try {
+    return JSON.parse(error.message).error;
+  } catch (e) {
+    console.error(e);
+    return error.message;
+  }
+};
+
 export default function Chat() {
   const [tokenOpen, setTokenOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
   const [token, setToken] = useLocalStorage<string | null>("ai-token", null);
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    body: { token },
+  const [model, setModel] = useLocalStorage<SupportedModels>(
+    "ai-model",
+    SUPPORTED_MODELS[0]
+  );
+  const { messages, input, handleInputChange, handleSubmit, error } = useChat({
+    body: { token, model },
   });
 
   return (
@@ -29,6 +48,13 @@ export default function Chat() {
           )}
 
           <form onSubmit={handleSubmit} className="max-w-2xl w-full mx-auto">
+            {error ? (
+              <div className="p-3 rounded-lg bg-rose-100 border-2 border-rose-200 mb-3">
+                <p className="font-sans text-sm text-red text-rose-800">
+                  {parseError(error)}
+                </p>
+              </div>
+            ) : null}
             <div className="relative">
               <input
                 className="w-full border-2 border-slate-200 rounded-lg p-2 font-sans text-base outline-none ring-offset-0 focus:border-slate-400 focus-visible:ring-2 focus-visible:ring-offset-2 ring-emerald-600 transition-[box-shadow,border-color] pr-10 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -47,14 +73,28 @@ export default function Chat() {
                 <PaperPlaneRight size="1em" />
               </button>
             </div>
-            <div className="mt-2 text-right">
+            <div className="mt-3 flex gap-2 justify-between">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className={ANCHOR_CLASS_NAME}
+                  onClick={() => setModelOpen(true)}
+                >
+                  <div className="font-sans text-xs font-medium">
+                    Change Model
+                  </div>
+                </button>
+                <p className="font-sans text-xs text-slate-500 inline-block">
+                  ({model})
+                </p>
+              </div>
               <button
                 type="button"
                 className={ANCHOR_CLASS_NAME}
                 onClick={() => setTokenOpen(true)}
               >
-                <div className="font-sans text-xs  font-medium">
-                  {token ? "Change OpenAI API Key" : "Set OpenAI API Key"}
+                <div className="font-sans text-xs font-medium">
+                  {token ? "Change API Key" : "Set API Key"}
                 </div>
               </button>
             </div>
@@ -67,6 +107,12 @@ export default function Chat() {
         open={tokenOpen}
         setOpen={setTokenOpen}
         setToken={setToken}
+      />
+      <ModelDialog
+        open={modelOpen}
+        setOpen={setModelOpen}
+        model={model}
+        setModel={setModel}
       />
     </>
   );

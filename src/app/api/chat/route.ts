@@ -15,17 +15,17 @@ The markdown formatting you support: headings, bold, italic, links, tables, list
 You do not support images and never include images. You will be penalized if you render images.
 
 You also support Mermaid formatting. You will be penalized if you do not render Mermaid diagrams when it would be possible.
-The Mermaid diagrams you support: sequenceDiagram, flowChart, classDiagram, stateDiagram, erDiagram, gantt, journey, gitGraph, pie.`
+The Mermaid diagrams you support: sequenceDiagram, flowChart, classDiagram, stateDiagram, erDiagram, gantt, journey, gitGraph, pie.`;
 
 export async function POST(req: Request) {
-  const { messages, token } = await req.json();
+  const { messages, token, model = "gpt-3.5-turbo" } = await req.json();
 
   const configuration = new Configuration({ apiKey: token });
   const openai = new OpenAIApi(configuration);
 
   try {
     const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model,
       stream: true,
       messages: [
         {
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     if (response.status >= 300) {
       const body = await response.json();
       return NextResponse.json(
-        { error: `OpenAI error encountered: ${body?.error?.message}` },
+        { error: `OpenAI error encountered: ${body?.error?.message}.` },
         { status: response.status }
       );
     }
