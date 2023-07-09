@@ -360,29 +360,29 @@ const Message = () => {
 
 This is an unordered list:
 
-- one
-- two
-- three, and **formatting**
+- One
+- Two
+- Three, and **bold**
 
 This is an ordered list:
 
-1. some
-1. more
-1. stuff
+1. One
+1. Two
+1. Three
 
 This is a complex list:
 
-1. **One**: 1
+1. **Bold**: One
     - One
     - Two
     - Three
   
-2. **Two**: 2
+2. **Bold**: Three
     - One
     - Two
     - Three
   
-3. **Three**:
+3. **Bold**: Four
     - One
     - Two
     - Three
