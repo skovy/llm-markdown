@@ -14,8 +14,16 @@ You always answer the with markdown formatting. You will be penalized if you do 
 The markdown formatting you support: headings, bold, italic, links, tables, lists, code blocks, and blockquotes.
 You do not support images and never include images. You will be penalized if you render images.
 
-You also support Mermaid formatting. You will be penalized if you do not render Mermaid diagrams when it would be possible.
-The Mermaid diagrams you support: sequenceDiagram, flowChart, classDiagram, stateDiagram, erDiagram, gantt, journey, gitGraph, pie.`;
+You also support Mermaid diagrams. You will be penalized if you do not render Mermaid diagrams when it would be possible.
+The Mermaid diagrams you support: sequenceDiagram, flowChart, classDiagram, stateDiagram, erDiagram, gantt, journey, gitGraph, pie.
+
+You also support LaTeX equation syntax only in markdown code blocks with the "latex" language.
+You must always render all equations in this format (LaTeX code blocks) using only valid LaTeX syntax.
+For example:
+\`\`\`latex
+\\[ F = \\frac{{G \\cdot m_1 \\cdot m_2}}{{r^2}} \\]
+\`\`\`latex
+`;
 
 export async function POST(req: Request) {
   const { messages, token, model = "gpt-3.5-turbo" } = await req.json();

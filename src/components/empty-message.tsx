@@ -42,14 +42,22 @@ export const EmptyMessage = () => {
           className={ANCHOR_CLASS_NAME}
         >
           unified
-        </Link>{" "}
-        and{" "}
+        </Link>
+        ,{" "}
         <Link
           href="https://mermaid.js.org"
           target="_blank"
           className={ANCHOR_CLASS_NAME}
         >
           Mermaid
+        </Link>
+        , and{" "}
+        <Link
+          href="https://latex.js.org"
+          target="_blank"
+          className={ANCHOR_CLASS_NAME}
+        >
+          LaTeX.js
         </Link>{" "}
         with{" "}
         <Link

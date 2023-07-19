@@ -1,5 +1,5 @@
 import { Dialog } from "@/components/dialog";
-import { CircleNotch } from "@phosphor-icons/react";
+import { CircleNotch, MathOperations } from "@phosphor-icons/react";
 import CheckFat from "@phosphor-icons/react/dist/icons/CheckFat";
 import Copy from "@phosphor-icons/react/dist/icons/Copy";
 import FlowArrow from "@phosphor-icons/react/dist/icons/FlowArrow";
@@ -9,8 +9,8 @@ import mermaid from "mermaid";
 import Link from "next/link";
 import {
   Children,
-  createElement,
   Fragment,
+  createElement,
   isValidElement,
   useEffect,
   useMemo,
@@ -24,7 +24,10 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { Plugin, unified } from "unified";
 import { visit } from "unist-util-visit";
-
+// @ts-expect-error
+import { HtmlGenerator, parse } from "latex.js";
+// import "node_modules/latex.js/dist/css/base.css"
+import "node_modules/latex.js/dist/css/katex.css";
 export const ANCHOR_CLASS_NAME =
   "font-semibold underline text-emerald-700 underline-offset-[2px] decoration-1 hover:text-emerald-800 transition-colors";
 
@@ -140,7 +143,7 @@ export const useMarkdownProcessor = (content: string) => {
           pre: ({ children }: JSX.IntrinsicElements["pre"]) => {
             return (
               <div className="relative mb-6">
-                <pre className="p-4 pr-10 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm overflow-x-auto">
+                <pre className="p-4 rounded-lg border-2 border-emerald-200 bg-emerald-100 [&>code.hljs]:p-0 [&>code.hljs]:bg-transparent font-code text-sm overflow-x-auto flex items-start">
                   {children}
                 </pre>
               </div>
@@ -214,6 +217,7 @@ export const useMarkdownProcessor = (content: string) => {
 const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
   const [copied, setCopied] = useState(false);
   const [showMermaidPreview, setShowMermaidPreview] = useState(false);
+  const [showLatexPreview, setShowLatexPreview] = useState(false);
 
   useEffect(() => {
     if (copied) {
@@ -226,14 +230,17 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
   // is a language block wrapped in a `pre` tag.
   if (className) {
     const isMermaid = className.includes("language-mermaid");
+    const isLatex = className.includes("language-latex");
 
     return (
       <>
-        <code className={className}>{children}</code>
-        <div className="absolute top-1 right-1 flex flex-col gap-1">
+        <code className={`${className} flex-grow flex-shrink my-auto`}>
+          {children}
+        </code>
+        <div className="flex flex-col gap-1 flex-grow-0 flex-shrink-0">
           <button
             type="button"
-            className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+            className="rounded-md p-1 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
             aria-label="copy code to clipboard"
             title="Copy code to clipboard"
             onClick={() => {
@@ -251,7 +258,7 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
             <>
               <button
                 type="button"
-                className="rounded-lg p-2 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+                className="rounded-md p-1 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
                 aria-label="Open Mermaid preview"
                 title="Open Mermaid preview"
                 onClick={() => {
@@ -270,6 +277,29 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
               </Dialog>
             </>
           ) : null}
+          {isLatex ? (
+            <>
+              <button
+                type="button"
+                className="rounded-md p-1 text-emerald-900 hover:bg-emerald-200 border-2 border-emerald-200 transition-colors"
+                aria-label="Open Latex preview"
+                title="Open Latex preview"
+                onClick={() => {
+                  setShowLatexPreview(true);
+                }}
+              >
+                <MathOperations className="w-4 h-4" />
+              </button>
+              <Dialog
+                open={showLatexPreview}
+                setOpen={setShowLatexPreview}
+                title="Latex diagram preview"
+                size="3xl"
+              >
+                <Latex content={children?.toString() ?? ""} />
+              </Dialog>
+            </>
+          ) : null}
         </div>
       </>
     );
@@ -280,6 +310,38 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
       {children}
     </code>
   );
+};
+
+const Latex = ({ content }: { content: string }) => {
+  const [diagram, setDiagram] = useState<string | boolean>(true);
+
+  useEffect(() => {
+    try {
+      const generator = new HtmlGenerator({ hyphenate: false });
+      const fragment = parse(content, { generator: generator }).domFragment();
+      setDiagram(fragment.firstElementChild.outerHTML);
+    } catch (error) {
+      console.error(error);
+      setDiagram(false);
+    }
+  }, [content]);
+
+  if (diagram === true) {
+    return (
+      <div className="flex gap-2 items-center">
+        <CircleNotch className="animate-spin w-4 h-4 text-emerald-900" />
+        <p className="font-sans text-sm text-slate-700">Rendering diagram...</p>
+      </div>
+    );
+  } else if (diagram === false) {
+    return (
+      <p className="font-sans text-sm text-slate-700">
+        Unable to render this diagram.
+      </p>
+    );
+  } else {
+    return <div dangerouslySetInnerHTML={{ __html: diagram ?? "" }} />;
+  }
 };
 
 const Mermaid = ({ content }: { content: string }) => {
@@ -420,5 +482,9 @@ gitGraph
     merge develop
     commit
     commit
+\`\`\`
+
+\`\`\`latex
+\\[F(x) = \\int_{a}^{b} f(x) \\, dx\\]
 \`\`\`
 `;
