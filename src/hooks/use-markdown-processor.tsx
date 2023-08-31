@@ -15,6 +15,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import flattenChildren from "react-keyed-flatten-children";
 import rehypeHighlight from "rehype-highlight";
@@ -218,6 +219,7 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
   const [copied, setCopied] = useState(false);
   const [showMermaidPreview, setShowMermaidPreview] = useState(false);
   const [showLatexPreview, setShowLatexPreview] = useState(false);
+  const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (copied) {
@@ -234,7 +236,7 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
 
     return (
       <>
-        <code className={`${className} flex-grow flex-shrink my-auto`}>
+        <code ref={ref} className={`${className} flex-grow flex-shrink my-auto`}>
           {children}
         </code>
         <div className="flex flex-col gap-1 flex-grow-0 flex-shrink-0">
@@ -244,8 +246,10 @@ const CodeBlock = ({ children, className }: JSX.IntrinsicElements["code"]) => {
             aria-label="copy code to clipboard"
             title="Copy code to clipboard"
             onClick={() => {
-              navigator.clipboard.writeText(children?.toString() ?? "");
-              setCopied(true);
+              if (ref.current) {
+                navigator.clipboard.writeText(ref.current.innerText ?? "");
+                setCopied(true);
+              }
             }}
           >
             {copied ? (
